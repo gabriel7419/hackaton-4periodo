@@ -22,7 +22,7 @@ services:
     command: >
       sh -c "sleep 25 && 
             mysql -h db -u root -proot -e 'DROP DATABASE IF EXISTS hackathon;
-      CREATE DATABASE hackathon;
+            CREATE DATABASE hackathon;"
     networks:
       - app-network
 
