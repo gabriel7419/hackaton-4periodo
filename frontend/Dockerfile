@@ -1,13 +1,22 @@
-FROM node:18
+FROM node:20
 
+# Defina o diretório de trabalho
 WORKDIR /usr/src/app
 
+# Copie os arquivos package.json e package-lock.json
 COPY package*.json ./
 
-RUN npm install && npm cache clean --force
+# Instale dependências com --legacy-peer-deps para evitar conflitos de dependências
+RUN npm install --legacy-peer-deps --include=dev && npm cache clean --force
 
+# Reconstrua o esbuild para evitar erros de instalação
+RUN npm rebuild esbuild
+
+# Copie o restante dos arquivos para o container
 COPY . .
 
-EXPOSE 3000
+# Exponha a porta correta
+EXPOSE 5173
 
-CMD ["npm", "start"]
+# Defina o comando de execução do servidor de desenvolvimento
+CMD ["npm", "run", "dev"]

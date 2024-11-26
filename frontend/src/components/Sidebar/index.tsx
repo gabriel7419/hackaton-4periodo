@@ -9,6 +9,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
+  const role = localStorage.getItem('role');
   const location = useLocation();
   const { pathname } = location;
 
@@ -63,7 +64,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     >
       {/* <!-- SIDEBAR HEADER --> */}
       <div className="flex items-center justify-center gap-2 px-6 py-5.5 lg:py-6.5">
-        <NavLink to="/">
+        <NavLink to="/SalasDisponiveis">
           <img src={Logo} alt="Logo" className="w-50 h-auto" /> {/* Ajuste w-20 conforme necessário */}
         </NavLink>
 
@@ -113,7 +114,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       <NavLink
                         to="/ecommerce" // Mude "#" para "/dashboard"
                         className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/ecommerce' || pathname.includes('dashboard')) &&
-                          'dark:bg-meta-4'
+                          'bg-graydark dark:bg-meta-4'
                           }`}
                         onClick={(e) => {
                           e.preventDefault();
@@ -178,7 +179,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Salas disponíveis
+                              Lista de Salas
                             </NavLink>
                           </li>
 
@@ -190,9 +191,36 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Reservas realizadas
+                              Lista de Reservas
                             </NavLink>
                           </li>
+
+                          {(role === 'admin' || role === 'professor') && (
+                            <li>
+                              <NavLink
+                                to="/tables/historico"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-white ' +
+                                  (isActive && '!text-white')
+                                }
+                              >
+                                Histórico de Alterações
+                              </NavLink>
+                            </li>
+                          )}
+                          {role === 'admin' && (
+                            <li>
+                              <NavLink
+                                to="/tables/users"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-white ' +
+                                  (isActive && '!text-white')
+                                }
+                              >
+                                Tabela de Usuários
+                              </NavLink>
+                            </li>
+                          )}
                         </ul>
                       </div>
 
@@ -206,7 +234,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               {/* <!-- Menu Item Dashboard --> */}
 
               {/* <!-- Menu Item Calendar --> */}
-              
+
               {/* <!-- Menu Item Calendar --> */}
 
               {/* <!-- Menu Item Profile --> }
@@ -244,7 +272,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               {/* <!-- Menu Item Forms --> */}
 
               {/* <!-- Menu Item Tables --> */}
-              
+
 
 
               {/* <!-- Menu Item Tables --> */}

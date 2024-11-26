@@ -4,11 +4,10 @@ import { useNavigate } from 'react-router-dom';
 interface RedirectButtonProps {
   icon?: React.ReactNode; // Prop opcional para o ícone
   path: string; // Rota completa para o redirecionamento
-  name: string; // Nome a ser exibido no botão
-  className?: string; // Prop opcional para customização do estilo
+  name: string
 }
 
-const RedirectButton: React.FC<RedirectButtonProps> = ({ icon, path, name, className }) => {
+const RedirectButton: React.FC<RedirectButtonProps> = ({ icon, path ,name}) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -19,10 +18,10 @@ const RedirectButton: React.FC<RedirectButtonProps> = ({ icon, path, name, class
     <button 
       type="button" 
       onClick={handleClick} 
-      className={`flex items-center gap-2 p-2 rounded bg-blue-500 text-white hover:bg-blue-700 ${className}`}
+      className="flex items-center gap-2 p-2 rounded bg-blue-500 text-white hover:bg-blue-700"
     >
-      {icon && <span>{icon}</span>} {/* Se houver ícone, renderiza */}
-      <span>{name}</span> {/* Exibe o nome do botão */}
+      {icon && <span>{icon}</span>}
+      <span>{name}</span>
     </button>
   );
 };

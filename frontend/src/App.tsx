@@ -23,7 +23,7 @@ import DefaultLayout from './layout/DefaultLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Insurt from './pages/crud/InsurtBazzar';
 // import { Table } from './components/TableSettings';
-import TablePosition from './components/Tables/tables/TablePosition';
+import TablePosition from './components/Tables/tables/TableHistorico';
 import InsurtReserva from './pages/crud/InsurtReserva';
 import InsertAmbient from './pages/crud/insertAmbiente';
 import InsurtTransparency from './pages/crud/InsurtTransparency';
@@ -33,11 +33,15 @@ import InsurtEvents from './pages/crud/InsurtEvents';
 import TableAboutUs from './components/Tables/tables/TableAboutUs';
 import UpdateAboutUs from './pages/crud/update/UpdateAboutUs';
 import UpdateReserva from './pages/crud/update/UpdateReserva';
+import UpdateUser from './pages/crud/update/UpdateUser';
+import InsertUser from './pages/crud/insertUser';
+
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false); // Estado de autenticação
   const { pathname } = useLocation();
+  const userRole = localStorage.getItem('role');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -62,20 +66,20 @@ function App() {
           path="/ecommerce"
           element={
             <>
-              <PageTitle title="eCommerce" />
+              <PageTitle title="Lista de Reservas" />
               <ECommerce />
             </>
-            }
+          }
         />
 
         <Route
           path="/SalasDisponiveis"
           element={
             <>
-              <PageTitle title="Ambientes" />
+              <PageTitle title="Lista de Ambientes" />
               <SalasDisponeis />
             </>
-            }
+          }
         />
         <Route
           path="/calendar"
@@ -116,12 +120,17 @@ function App() {
         <Route
           path="/tables/users"
           element={
-            <>
-            <PageTitle title="Tabela" />
-            <Tables />
-          </>
+            userRole === 'admin' ? (
+              <>
+                <PageTitle title="Tabela de Usuários" />
+                <Tables />
+              </>
+            ) : (
+              <div>Acesso negado. Você não tem permissão para acessar esta página.</div>
+            )
           }
         />
+
         <Route
           path="/tables/image"
           element={
@@ -145,7 +154,7 @@ function App() {
           element={
             <>
               <PageTitle title="Tabela Transparência" />
-              <TablesTransparency/>
+              <TablesTransparency />
             </>
           }
         />
@@ -154,25 +163,30 @@ function App() {
           element={
             <>
               <PageTitle title="Tabela Valor" />
-              <TablesValuable/>
+              <TablesValuable />
             </>
           }
         />
         <Route
-          path="/tables/position"
+          path="/tables/historico"
           element={
-            <>
-              <PageTitle title="Tabela" />
-              <TablePosition/>
-            </>
+            (userRole === 'admin' || userRole === 'professor') ? (
+              <>
+                <PageTitle title="Tabela de Historico" />
+                <TablePosition />
+              </>
+            ) : (
+              <div>Acesso negado. Você não tem permissão para acessar esta página.</div>
+            )
           }
         />
+
         <Route
           path="/tables/event"
           element={
             <>
               <PageTitle title="Tabela de Eventos" />
-              <TableEvent/>
+              <TableEvent />
             </>
           }
         />
@@ -181,7 +195,7 @@ function App() {
           element={
             <>
               <PageTitle title="Tabela Sobre Nós" />
-              <TableAboutUs/>
+              <TableAboutUs />
             </>
           }
         />
@@ -225,7 +239,7 @@ function App() {
           index
           element={
             <>
-              <PageTitle title="Painel Casa da Paz" />
+              <PageTitle title="UniAlfa" />
               <SignIn />
             </>
           }
@@ -233,37 +247,51 @@ function App() {
         <Route
           path="/auth/signup"
           element={
-            <>
-              <PageTitle title="Inscrever-se" />
-              <SignUp />
-            </>
+            userRole === 'admin' ? (
+              <>
+                <PageTitle title="Inscrever-se" />
+                <SignUp />
+              </>
+            ) : (
+              <div>Acesso negado. Você não tem permissão para acessar esta página.</div>
+            )
           }
         />
+
         <Route
           path="/insurt/bazzar"
           element={
             <>
               <PageTitle title="insurt" />
-              <Insurt/>
+              <Insurt />
             </>
           }
         />
         <Route
           path="/insurt/reserva"
           element={
-            <>
-              <PageTitle title="insurt" />
-              <InsurtReserva/>
-            </>
+            (userRole === 'admin' || userRole === 'professor') ? (
+              <>
+                <PageTitle title="Insert Reserva" />
+                <InsurtReserva />
+              </>
+            ) : (
+              <div>Acesso negado. Você não tem permissão para acessar esta página.</div>
+            )
           }
         />
+
         <Route
           path="/insurt/ambiente"
           element={
-            <>
-              <PageTitle title="insert" />
-              <InsertAmbient/>
-            </>
+            userRole === 'admin' ? (
+              <>
+                <PageTitle title="Insert Ambiente" />
+                <InsertAmbient />
+              </>
+            ) : (
+              <div>Acesso negado. Você não tem permissão para acessar esta página.</div>
+            )
           }
         />
         <Route
@@ -271,7 +299,7 @@ function App() {
           element={
             <>
               <PageTitle title="insurt" />
-              <InsurtTransparency/>
+              <InsurtTransparency />
             </>
           }
         />
@@ -280,7 +308,7 @@ function App() {
           element={
             <>
               <PageTitle title="insurt" />
-              <InsurtValuable/>
+              <InsurtValuable />
             </>
           }
         />
@@ -289,7 +317,7 @@ function App() {
           element={
             <>
               <PageTitle title="insurt" />
-              <InsurtEvents/>
+              <InsurtEvents />
             </>
           }
         />
@@ -298,7 +326,7 @@ function App() {
           element={
             <>
               <PageTitle title="insurt" />
-              <UpdateAboutUs/>
+              <UpdateAboutUs />
             </>
           }
         />
@@ -308,11 +336,33 @@ function App() {
           element={
             <>
               <PageTitle title="insurt" />
-              <UpdateReserva/>
+              <UpdateReserva />
+            </>
+          }
+        />
+        <Route
+          path="/update/user/:id"
+          element={
+            <>
+              <PageTitle title="insurt" />
+              <UpdateUser />
+            </>
+          }
+        />
+
+        <Route
+          path="/registrar"
+          element={
+            <>
+              <PageTitle title="insurt" />
+              <InsertUser />
             </>
           }
         />
       </Routes>
+
+
+
     </DefaultLayout>
   );
 }

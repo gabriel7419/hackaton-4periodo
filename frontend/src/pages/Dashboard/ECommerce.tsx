@@ -1,25 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import RedirectButton from '../../components/button/RedirectButton';
-import { IoIosAddCircle } from 'react-icons/io';
+import React, { useState, useEffect } from 'react';
 import { FaTrash } from 'react-icons/fa';
+import { IoIosAddCircle } from 'react-icons/io';
 
 interface Ambiente {
   id: number;
+  usuario: string;
+  usuario_id: number;
   data_reserva: string;
-  data: string;
   hora_inicio: string;
   hora_fim: string;
-  usuario: string;
   ambiente: string;
-  usuario_id: string;
 }
 
 const ECommerce: React.FC = () => {
   const [ambientes, setAmbientes] = useState<Ambiente[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filtro, setFiltro] = useState('');
+  const [usuarioFiltro, setUsuarioFiltro] = useState('');
+  const [ambienteFiltro, setAmbienteFiltro] = useState('');
+  const role = localStorage.getItem('role');
 
   const userId = localStorage.getItem('user');
+  console.log('User ID:', userId);
 
   useEffect(() => {
     const fetchAmbientes = async () => {
@@ -27,13 +30,12 @@ const ECommerce: React.FC = () => {
         const response = await fetch('http://127.0.0.1:8000/api/reserva/index');
         const data = await response.json();
 
-        console.log(data);
+        console.log('Dados da API:', data);
 
-        // Verifique a estrutura da resposta da API
         if (Array.isArray(data)) {
-          setAmbientes(data); // Se for um array diretamente
+          setAmbientes(data);
         } else if (data.reservas && Array.isArray(data.reservas)) {
-          setAmbientes(data.reservas); // Se estiver dentro do campo 'reservas'
+          setAmbientes(data.reservas);
         } else {
           throw new Error('Estrutura inesperada da resposta da API.');
         }
@@ -49,99 +51,123 @@ const ECommerce: React.FC = () => {
   }, []);
 
   const handleDelete = (id: number) => {
-    console.log(`Excluindo ambiente com ID: ${id}`);
-    fetch(`http://127.0.0.1:8000/api/reserva/${id}/delete`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const confirmDelete = window.confirm('Você tem certeza que deseja excluir esta reserva?');
+    if (confirmDelete) {
+      console.log(`Excluindo ambiente com ID: ${id}`);
+      fetch(`http://127.0.0.1:8000/api/reserva/${id}/delete/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).then(() => {
+        setAmbientes(ambientes.filter((ambiente) => ambiente.id !== id));
+      });
+    }
   };
 
+  const ambientesFiltrados = ambientes.filter((ambiente) => {
+    return (
+      (ambiente.ambiente.toLowerCase().includes(ambienteFiltro.toLowerCase()) || !ambienteFiltro) &&
+      (ambiente.usuario.toLowerCase().includes(usuarioFiltro.toLowerCase()) || !usuarioFiltro) &&
+      (ambiente.data_reserva.includes(filtro) || !filtro)
+    );
+  });
+
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-      <div className="py-6 px-4 md:px-6 xl:px-7.5 mt-2 flex justify-between items-center">
-        <h4 className="text-xl font-semibold text-black dark:text-white mt-4 mb-3">
-          Lista de salas agendadas
-        </h4>
-        <div className="flex justify-end mb-1">
-          <RedirectButton
-            path="/insurt/reserva"
-            icon={<IoIosAddCircle />}
-            name="Agendar nova sala"
+    <div className="bg-gradient-to-r from-blue-50 via-blue-100 to-blue-200 p-8 rounded-lg shadow-2xl">
+      <div className="flex items-center justify-between mb-8">
+        <h4 className="text-3xl font-bold text-blue-700">Salas Agendadas</h4>
+        {(role === 'admin' || role === 'professor') && (
+          <button
+            className="flex items-center bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-lg hover:scale-105 transition-all duration-300"
+            onClick={() => window.location.href = '/insurt/reserva'}
+          >
+            <IoIosAddCircle size={24} />
+            <span className="ml-2">Criar Nova Reserva</span>
+          </button>
+        )}
+      </div>
+
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="flex flex-col">
+          <label className="font-semibold text-gray-700">Filtrar Ambiente:</label>
+          <input
+            type="text"
+            placeholder="Filtrar ambiente..."
+            value={ambienteFiltro}
+            onChange={(e) => setAmbienteFiltro(e.target.value)}
+            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="font-semibold text-gray-700">Filtrar Usuário:</label>
+          <input
+            type="text"
+            placeholder="Filtrar usuário..."
+            value={usuarioFiltro}
+            onChange={(e) => setUsuarioFiltro(e.target.value)}
+            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="font-semibold text-gray-700">Filtrar Data:</label>
+          <input
+            type="text"
+            placeholder="Filtrar data..."
+            value={filtro}
+            onChange={(e) => setFiltro(e.target.value)}
+            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
       </div>
 
-      {/* Mensagens de Carregamento ou Erro */}
-      {loading && <p className="text-center text-gray-500 py-4">Carregando salas...</p>}
+      {loading && <p className="text-center text-gray-500 py-4">Carregando...</p>}
       {error && <p className="text-center text-red-500 py-4">{error}</p>}
 
-      {/* Cabeçalho da Tabela */}
-      {!loading && !error && (
-        <>
-          <div className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
-            <div className="col-span-1 flex items-center">
-              <p className="font-medium">Usuário</p>
-            </div>
-            <div className="col-span-2 flex items-center">
-              <p className="font-medium">Data da reserva</p>
-            </div>
-            <div className="col-span-2 flex items-center">
-              <p className="font-medium">Horário início / final</p>
-            </div>
-            <div className="col-span-2 flex items-center">
-              <p className="font-medium">Ambiente</p>
-            </div>
-            <div className="col-span-1 flex items-center">
-              <p className="font-medium">Ações</p>
-            </div>
-          </div>
-
-          {/* Lista de Ambientes */}
-          {ambientes.map((ambiente) => (
-            <div
-              className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
-              key={ambiente.id}
-            >
-              <div className="col-span-1 flex items-center">
-                <p className="text-sm text-black dark:text-white">{ambiente.usuario}</p>
-              </div>
-              <div className="col-span-2 flex items-center">
-                <p className="text-sm text-black dark:text-white">{ambiente.data_reserva}</p>
-              </div>
-              <div className="col-span-2 flex items-center">
-                <p className="text-sm text-black dark:text-white">
-                  {ambiente.hora_inicio} / {ambiente.hora_fim}
-                </p>
-              </div>
-              <div className="col-span-1 flex items-center">
-                <p className="text-sm text-black dark:text-white">{ambiente.ambiente}</p>
-              </div>
-
-              <div className='ml-25 mt-6'>
-                {userId == ambiente.usuario_id && (
-                  <button onClick={() => handleDelete(ambiente.id)}>
-                    <FaTrash size={20} />
-                  </button>
+      <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
+        <table className="min-w-full table-auto text-center">
+          <thead>
+            <tr className="bg-blue-200">
+              <th className="py-4 px-6 text-lg text-blue-600">Usuário</th>
+              <th className="py-4 px-6 text-lg text-blue-600">Data da Reserva</th>
+              <th className="py-4 px-6 text-lg text-blue-600">Horário</th>
+              <th className="py-4 px-6 text-lg text-blue-600">Ambiente</th>
+              {ambientesFiltrados.some((ambiente) => String(ambiente.usuario_id) === userId) && (
+                <th className="py-4 px-6 text-lg text-blue-600">Ações</th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {ambientesFiltrados.map((ambiente) => (
+              <tr key={ambiente.id} className="border-t hover:bg-blue-50 transition-all duration-300">
+                <td className="py-3 px-6">{ambiente.usuario}</td>
+                <td className="py-3 px-6">{ambiente.data_reserva}</td>
+                <td className="py-3 px-6">{ambiente.hora_inicio} / {ambiente.hora_fim}</td>
+                <td className="py-3 px-6">{ambiente.ambiente}</td>
+                {String(userId) === String(ambiente.usuario_id) && (
+                  <td className="py-3 px-6">
+                    <div className="flex justify-center space-x-4">
+                      <button
+                        onClick={() => window.location.href = `/update/reserva/${ambiente.id}`}
+                        className="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-2 rounded-lg hover:scale-105 transition-all duration-300"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(ambiente.id)}
+                        className="bg-gradient-to-r from-red-400 to-red-600 text-white px-6 py-2 rounded-lg hover:scale-105 transition-all duration-300"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </td>
                 )}
-              </div>
-
-              <div className='mb-2 mr-10'>
-                {userId == ambiente.usuario_id && (
-                  <div className="ml-auto h-12.5 w-15 rounded-md mt-4">
-                    <RedirectButton
-                      path={`/update/reserva/${ambiente.id}`}
-                      icon={<IoIosAddCircle />}
-                      name='Editar'
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </>
-      )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

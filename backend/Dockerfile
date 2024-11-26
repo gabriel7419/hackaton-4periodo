@@ -1,40 +1,26 @@
-FROM php:8.3-apache
+# Dockerfile para Laravel com PHP 8.2
+FROM php:8.2-fpm
 
+# Instala dependências e extensões
 RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    git \
-    curl
+    zip unzip git curl libpng-dev libonig-dev libxml2-dev && \
+    docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd pdo pdo_mysql zip opcache
+# Instala o Composer
+RUN apt-get update && apt-get install -y curl \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN a2enmod rewrite
+# Configura o diretório de trabalho
+WORKDIR /var/www
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Copia os arquivos do projeto
+COPY . /var/www
 
-WORKDIR /var/www/html
-COPY . /var/www/html
+# Instala as dependências do Laravel
+RUN composer install --optimize-autoloader --no-dev
 
-COPY .env /var/www/html/.env
+# Define permissões
+RUN chown -R www-data:www-data /var/www
 
-RUN composer install --optimize-autoloader --no-dev && \
-    rm -rf /root/.composer/cache
-
-RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-RUN echo '<VirtualHost *:80>
-    DocumentRoot /var/www/html/public
-    <Directory /var/www/html/public>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
-
-EXPOSE 80
+# Isso aqui é pra iniciar o servidor do Laravel, na porta 8000
+CMD php artisan serve --host=0.0.0.0 --port=8000
