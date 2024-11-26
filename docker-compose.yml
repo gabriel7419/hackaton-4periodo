@@ -16,19 +16,13 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: root
     ports:
-      - "8000:8000"
+      - "80:80" # Mapeando a porta 80 do container para a porta 80 do host
     depends_on:
       - db
     command: >
-      sh -c "sleep 10 && 
-            composer install && 
-            php artisan migrate --force && 
-            php artisan db:seed --force && 
-            apache2-foreground"
-
-    entrypoint:
-      /bin/bash -c "php artisan migrate --force && php artisan db:seed --force
-      && php artisan serve --host=0.0.0.0"
+      sh -c "sleep 25 && 
+            mysql -h db -u root -proot -e 'DROP DATABASE IF EXISTS hackathon;
+      CREATE DATABASE hackathon;
     networks:
       - app-network
 
