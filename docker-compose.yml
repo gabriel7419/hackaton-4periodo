@@ -10,20 +10,22 @@ services:
       - ./backend:/var/www
     environment:
       APP_ENV: local
-      DB _HOST: db
+      DB_HOST: db
       DB_PORT: 3306
       DB_DATABASE: hackathon
       DB_USERNAME: root
-      DB_PASSWORD: ""
+      DB_PASSWORD: root
     ports:
       - "8000:8000"
     depends_on:
       - db
     command: >
-      sh -c "composer install &&
-             php artisan migrate --force &&
-             php artisan db:seed --force &&
-             apache2-foreground"
+      sh -c "sleep 10 && 
+            composer install && 
+            php artisan migrate --force && 
+            php artisan db:seed --force && 
+            apache2-foreground"
+
     entrypoint:
       /bin/bash -c "php artisan migrate --force && php artisan db:seed --force
       && php artisan serve --host=0.0.0.0"
@@ -52,8 +54,8 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: hackathon
       MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: hackathon
     volumes:
       - dbdata:/var/lib/mysql
     networks:
@@ -65,7 +67,7 @@ services:
     restart: always
     environment:
       PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ROOT_PASSWORD: "root"
     ports:
       - "8080:80"
     networks:
